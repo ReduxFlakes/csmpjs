@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--  
+© 2024 ReduxFlakes, Licensed under GPL2.0-only
+Version 1.0-RC1
+
+CSMSJS (Customizable, Simple, Music Player, JS)
+Made for Fl1x1n website's LRS.
+
+Source code: https://github.com/reduxflakes/csmsjs
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSMSJS</title>
+    <style>
+        * {
+            margin: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        .player-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75em;
+            background: black;
+            color: white;
+            padding: 1rem;
+        }
+
+        .pc-meta img {
+            position: relative;
+        }
+
+        img:not([src]) {
+            visibility: hidden;
+        }
+
+        .pc-meta::before {
+            content: "?";
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: 1rem;
+            width: 72px;
+            height: 72px;
+            position: absolute;
+            font-size: 2rem;
+            color: white;
+            background: rgb(67, 11, 11);
+        }
+
+        .pc-meta {
+            display: flex;
+            gap: 0.5em;
+            align-items: center;
+        }
+
+        .pc__title {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .pc__artist {
+            opacity: 0.8;
+        }
+
+        .pc-btns {
+            display: flex;
+            justify-content: space-between;
+        }
+      
+        button,
+        .button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid white;
+            background: black;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            font-size: 2rem;
+            padding: 0.25rem 1rem;
+        }
+
+        button:hover,
+        .button:hover {
+            background: #252525;
+        }
+
+        button[disabled] {
+            opacity: 0.5;
+        }
+      
+        button span img {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .lastfm-btn {
+            width: fit-content;
+        }
+
+        .lastfm-btn:hover {
+            border-color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container" id="player">
+        <div class="pc-meta"> <img id="image-test" width="72px" height="72px">
+            <p><span class="pc__title" id="title">Click play</span><br><span class="pc__artist" id="artist">No artist</span></p>
+        </div>
+        <div class="pc-btns">
+            <button class="prev" id="previous" disabled>&#8672;</button>
+            <button class="play" id="play"><span><img id="btnIcon" src="line-md--play-filled.svg" alt=""></span></button>
+            <button class="next" id="next" disabled>&#8674;</button>
+            <a id="lastfm" href="https://last.fm" class="button lastfm-btn"><svg xmlns="http://www.w3.org/2000/svg"
+                    width="2rem" height="2rem" viewBox="0 0 256 256">
+                    <path fill="#ff3d3d"
+                        d="M252 160a44.05 44.05 0 0 1-44 44h-17.43a60.2 60.2 0 0 1-54.37-34.63l-30.15-64.59A36.13 36.13 0 0 0 73.43 84H64a36 36 0 0 0-36 36v24a36 36 0 0 0 36 36h8a28 28 0 0 0 25.68-16.8a12 12 0 1 1 22 9.6A52 52 0 0 1 72 204h-8a60.07 60.07 0 0 1-60-60v-24a60.07 60.07 0 0 1 60-60h9.43a60.2 60.2 0 0 1 54.37 34.63l30.2 64.59A36.13 36.13 0 0 0 190.57 180H208a20 20 0 0 0 0-40h-20a40 40 0 0 1 0-80h20a36 36 0 0 1 36 36a12 12 0 0 1-24 0a12 12 0 0 0-12-12h-20a16 16 0 0 0 0 32h20a44.05 44.05 0 0 1 44 44" />
+                </svg></a>
+        </div>
+    </div>
+    <script>
+        let musicPlaylist = [
+            {
+                title: "Music 1",
+                artist: "Artist 1",
+                cover: "", /* where the album cover is located */
+                lastfm: "asdf", /* page of the song/release in Last.fm */
+                source: "" /* the file of the music */
+            },
+            {
+                title: "Music 2",
+                artist: "Artist 2",
+                cover: "",
+                lastfm: "",
+                source: ""
+            }
+        ]
+
+        let title = document.getElementById("title");
+        let artist = document.getElementById("artist");
+        let player = document.getElementById("player");
+        let image = document.getElementById("image-test");
+        let lastfmlink = document.getElementById("lastfm");
+
+        let btnPlay = document.getElementById("play");
+        let btnPrev = document.getElementById("previous");
+        let btnNext = document.getElementById("next");
+        let btnIcon = document.getElementById("btnIcon");
+
+        btnPlay.addEventListener("click", playerEngine);
+        btnPrev.addEventListener("click", playerPrev);
+        btnNext.addEventListener("click", playerNext);
+
+        let audioEngine = new Audio();
+        let isPlaying = false;
+        let currentSong = 0;
+
+        function loadMusic(id) {
+            title.innerHTML = musicPlaylist[id].title;
+            artist.innerHTML = musicPlaylist[id].artist;
+            image.src = musicPlaylist[id].cover;
+            lastfmlink.href = musicPlaylist[id].lastfm;
+            audioEngine.src = musicPlaylist[id].source;
+        }
+
+
+        function playerEngine() {
+            btnPrev.disabled = false;
+            btnNext.disabled = false;
+            if (!isPlaying) {
+                if (audioEngine.src === musicPlaylist[currentSong].source && audioEngine.paused) {
+                    playMusic();
+                } else {
+                    loadMusic(currentSong);
+                    playMusic();
+                }
+            } else {
+                pauseMusic();
+            }
+        }
+
+        function pauseMusic() {
+            audioEngine.pause();
+            isPlaying = false;
+            btnIcon.src = "line-md--play-filled.svg";
+        }
+
+        function playMusic() {
+            audioEngine.play();
+            isPlaying = true;
+            btnIcon.src = "line-md--pause.svg";
+        }
+
+        function playerPrev() {
+            if (currentSong > 0) {
+                currentSong = currentSong - 1;
+                loadMusic(currentSong);
+                playMusic();
+                /* restart the song if it's the first one in the playlist */
+            } else if (currentSong = musicPlaylist.length) {
+                currentSong = 0;
+                loadMusic(currentSong);
+                playMusic();
+            }
+        }
+
+        function playerNext() {
+            if (currentSong < musicPlaylist.length) {
+                currentSong = currentSong + 1;
+                loadMusic(currentSong);
+                playMusic();
+            } else if (currentSong = musicPlaylist.length) {
+                currentSong = 0;
+                loadMusic(currentSong);
+                playMusic();
+            }
+        }
+    </script>
+</body>
+
+</html>
