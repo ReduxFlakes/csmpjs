@@ -22,5 +22,5 @@ If possible, please link this repository where you implement CSMPJS. I appreciat
 
 ## Credits
 
-- @Fl1x1n - For the suggestion of making a music player.
+- [@Fl1x1n](https://github.com/Fl1x1n) - For the suggestion of making a music player for his website.
 - Material Line Icons - For the play/pause SVG icons used in the player.
