@@ -1,5 +1,5 @@
 # CSMPJS
-A customizable, simple, music player in JS.
+> A customizable, simple, music player in JS.
 
 ## Features
 
@@ -14,7 +14,14 @@ A customizable, simple, music player in JS.
 
 Just copy the HTML and implement it into anywhere on your website/project.
 
-Don't forget to actually fill the `musicPlaylist` array with the necessary data (music information, the music file, and Last.fm release page).
+Don't forget to fill the `musicPlaylist` array with the necessary data (music information, the music file, and Last.fm release page).
+
+## Todo
+
+- [ ] Shuffle
+- [ ] Support for skins/themes
+- [ ] Interactive playlist
+- [ ] Ability to disable options (disable album cover, Last.fm button)
 
 ## Attribution
 
